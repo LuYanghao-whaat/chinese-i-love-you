@@ -5,8 +5,9 @@
 *「你请不起的高三语文名师，现在 AI 给你一位」*
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Version](https://img.shields.io/badge/version-2.6.6-brightgreen.svg)](gaokao-zuowen-coach/VERSION)
 [![skills.sh](https://img.shields.io/badge/skills.sh-Compatible-brightgreen)](https://skills.sh)
-[![Modes](https://img.shields.io/badge/Modes-8-blue)](#它能做什么)
+[![Modes](https://img.shields.io/badge/Modes-9-blue)](#它能做什么)
 
 <br>
 
