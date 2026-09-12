@@ -12,7 +12,11 @@
 
 ## 关于方法论与素材的来源
 
-`references/`、`resources/`、`examples/` 目录下的方法论、素材库、示例对话，是在通用议论文训练体系的基础上，结合公开资料与 AI 工程实践重新抽象、撰写而成。
+本仓库基于 [Weichenleeeee123/oh-my-chinese-teacher](https://github.com/Weichenleeeee123/oh-my-chinese-teacher)（MIT License）修改而来。上游提供了「语文老师.skill」的原始框架（审题 / 提纲 / 范文 / 批改 / 限时训练、三立审题法、素材库与示例体系），本项目在其基础上重新抽象、扩写与重构。
+
+原始版权归 oh-my-chinese-teacher contributors 所有，本项目保留原始版权声明与来源链接。
+
+`references/`、`resources/`、`examples/` 目录下的方法论、素材库、示例对话，是在上述基础上，结合公开资料与 AI 工程实践重新抽象、撰写而成。
 
 这部分内容：
 - 可以自由使用、引用、修改
