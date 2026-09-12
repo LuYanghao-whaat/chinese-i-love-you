@@ -16,7 +16,7 @@
 陪你走完 审题 · 立意 · 提纲 · 范文 · 批改 的全流程。
 
 ```bash
-npx skills add LuYanghao-whaat/chinese-i-love-you
+npx skills add <owner>/chinese-i-love-you
 ```
 
 </div>
@@ -107,13 +107,13 @@ npx skills add LuYanghao-whaat/chinese-i-love-you
 ### 方式一：一行命令
 
 ```bash
-npx skills add LuYanghao-whaat/chinese-i-love-you
+npx skills add <owner>/chinese-i-love-you
 ```
 
 ### 方式二：本地加载
 
 ```bash
-git clone https://github.com/LuYanghao-whaat/chinese-i-love-you.git ~/.claude/skills/gaokao-zuowen-coach
+git clone https://github.com/<owner>/chinese-i-love-you.git ~/.claude/skills/gaokao-zuowen-coach
 ```
 
 重启后生效。在对话里说一句 "帮我审这道作文题" 就会触发。
@@ -149,7 +149,12 @@ git clone https://github.com/LuYanghao-whaat/chinese-i-love-you.git ~/.claude/sk
 - 输出格式：探讨式（默认，像老师当面聊）/ 报告式（分条列点）/ Word 文档
 - 是否打分：需要（分数 + 三项维度）/ 不需要（只给评语建议）
 
-选"Word 文档"时，按内置的 python-docx 排版规范生成，并默认备好 Python 3.12 与 python-docx。
+若选了"Word 文档"，再追问文档视效：普通（默认）/ 美观 / 仅 Markdown / 纯文本。
+生成时按内置的 python-docx 排版规范，并默认备好 Python 3.12 与 python-docx。
+
+### 启动先自检更新
+
+每次会话先比对本地 `VERSION` 与 GitHub 上的远程版本，有新版就提醒一句。
 
 ---
 
@@ -199,6 +204,7 @@ chinese-i-love-you/
 ├── NOTICE.md                   # 版权与语料声明
 └── gaokao-zuowen-coach/        # Skill 本体（名字不变）
     ├── SKILL.md                # 入口：9 种模式 + 开场偏好 + 人设 + 红线
+    ├── VERSION                 # 版本号（更新检查用）
     ├── references/             # 方法论九件套
     │   ├── 01-核心审题法.md    # 三立 + 题眼 + 合理生发 + 三境七论
     │   ├── 02-段落与结构.md    # 论证段落闭环 + 全篇结构 + 节点语言
