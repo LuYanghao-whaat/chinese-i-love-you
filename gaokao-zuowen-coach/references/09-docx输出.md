@@ -76,7 +76,8 @@ HEX_RULE    = "C9D8E8"
 2. 按类型选骨架顺序（见第八节），但骨架只是顺序，具体每节用哪个组件看内容。
 3. 逐节挑组件：这段是并列要点就用列表，是对照就用两栏/表格，是重点结论就用色块，是分数就用评分卡。
 4. 写脚本、本地跑通。
-5. 生成后自检（第七节）。
+5. 生成后处理（有 Word 就做）：打开文档、更新域、保存，把目录/页码烘焙进去，避免打开弹"是否更新域"；顺带导出 PDF 做审计。
+6. 渲染审计（第七节）：逐页看图，有问题就改、重生成。
 
 动态化原则：不要每篇都用同一串函数。内容决定组件——
 - 有对比 → 两栏或表格；纯叙述 → 正文 + 色块。
@@ -162,7 +163,7 @@ def setup_page_section(doc, index=0, footer=True):
         page_number(fp)
 
 def set_doc_settings(doc):
-    """兼容性模式 15 + 打开时更新域（修目录空白页）"""
+    """兼容性模式 15。不要设 updateFields=true —— 那会让 Word 每次打开都弹“是否更新域”。"""
     st = doc.settings.element
     for el in st.findall(qn('w:compat')): st.remove(el)
     compat = OxmlElement('w:compat')
@@ -172,7 +173,6 @@ def set_doc_settings(doc):
     cs.set(qn('w:val'), '15')
     compat.append(cs); st.append(compat)
     for el in st.findall(qn('w:updateFields')): st.remove(el)
-    uf = OxmlElement('w:updateFields'); uf.set(qn('w:val'), 'true'); st.append(uf)
 
 def header_text(section, text, align=WD_ALIGN_PARAGRAPH.RIGHT):
     section.header.is_linked_to_previous = False
@@ -397,14 +397,28 @@ def dropcap(paragraph, lines=3):
 3. 表格列宽错乱：加 `w:tblLayout type="fixed"`。
 4. 页眉页脚串扰：多节文档先 `is_linked_to_previous = False`。
 5. 换行崩溃：`add_run()` 里不能用 `\n`。
-6. 兼容性模式：必须调 `set_doc_settings()`（兼容性 15 + 更新域）。
-7. 目录空白页：`updateFields=true`；普通/极简档不放目录，只有美观档放。
+6. 兼容性模式：必须调 `set_doc_settings()`，把 `compatibilityMode` 设为 15。
+7. 目录空白页 / 打开弹窗：TOC 和页码是域，python-docx 不会渲染，Word 打开时可能是空白。
+   - 不要设 `updateFields=true`——那会让 Word 每次打开都弹"该文档包含的域可能引用了其他文件，是否更新"。
+   - 正确做法：生成后用 Word 打开一次、更新域、保存（见第六节"生成后处理"），把目录烘焙进文档，之后打开不再弹窗。
+   - 普通 / 极简档不放目录，只有美观档放。
 
 ---
 
 ## 七、生成后审计（强制，不许跳过）
 
-生成完 `.docx` 不算完。必须把文档渲染成逐页图片，自己逐页看一遍，确认排版没问题，再交付。
+生成完 `.docx` 不算完。有 Word 时，先更新域并保存（烘焙目录/页码，避免打开弹窗），再渲染成图审计：
+
+```powershell
+$w = New-Object -ComObject Word.Application; $w.Visible = $false; $w.DisplayAlerts = 0
+$d = $w.Documents.Open("C:\path\报告.docx")
+$d.Fields.Update() | Out-Null
+$d.Save()                                   # 把更新后的域烘焙进 docx
+$d.ExportAsFixedFormat("C:\path\报告.pdf", 17)
+$d.Close($false); $w.Quit()
+```
+
+然后把文档渲染成逐页图片，自己逐页看一遍，确认排版没问题，再交付。
 渲染方法自选——导出 PDF 再转图、用 Word 截图、或别的方式都行，关键是"真的看到每一页"。
 
 逐页检查：
