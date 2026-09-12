@@ -5,7 +5,8 @@
 *「你请不起的高三语文名师，现在 AI 给你一位」*
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-2.6.6-brightgreen.svg)](gaokao-zuowen-coach/VERSION)
+[![Version](https://img.shields.io/badge/version-2.6.7-brightgreen.svg)](gaokao-zuowen-coach/VERSION)
+[![Updated](https://img.shields.io/github/last-commit/LuYanghao-whaat/chinese-i-love-you?label=%E6%9C%80%E5%90%8E%E6%9B%B4%E6%96%B0&color=blue)](https://github.com/LuYanghao-whaat/chinese-i-love-you/commits/main)
 [![skills.sh](https://img.shields.io/badge/skills.sh-Compatible-brightgreen)](https://skills.sh)
 [![Modes](https://img.shields.io/badge/Modes-9-blue)](#它能做什么)
 
