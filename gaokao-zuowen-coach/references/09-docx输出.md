@@ -351,6 +351,21 @@ def logic_table(doc, rows):
     """逻辑链审查专用：环节 / 说法 / 判断 / 说明"""
     table(doc, [["环节", "文章的说法", "判断", "说明"]] + rows, widths=[0.9, 2.3, 0.9, 2.4])
 
+def side_table(doc, rows, widths=(3.1, 2.4)):
+    """旁批：两列，左列原文、右列批注。rows = [(原文段落, 批注), ...]"""
+    t = doc.add_table(rows=len(rows), cols=2)
+    t.style = 'Table Grid'
+    layout = OxmlElement('w:tblLayout'); layout.set(qn('w:type'), 'fixed')
+    t._tbl.tblPr.append(layout)
+    for ri, (src, note) in enumerate(rows):
+        c0, c1 = t.cell(ri, 0), t.cell(ri, 1)
+        c0.width, c1.width = Inches(widths[0]), Inches(widths[1])
+        set_run(c0.paragraphs[0].add_run(src), FONT_SONG, 10, C_TEXT)
+        p1 = c1.paragraphs[0]
+        set_run(p1.add_run(note), FONT_KAI, 10, C_WARN)
+        shading(p1, "FBF3E7")
+    return t
+
 # ============ I. 图片与高级（按需） ============
 
 def picture(doc, path, width_in=5):
@@ -387,21 +402,20 @@ def dropcap(paragraph, lines=3):
 
 ---
 
-## 七、生成后自检（必须）
+## 七、生成后审计（强制，不许跳过）
 
-跑通不算完，翻一遍：
+生成完 `.docx` 不算完。必须把文档渲染成逐页图片，自己逐页看一遍，确认排版没问题，再交付。
+渲染方法自选——导出 PDF 再转图、用 Word 截图、或别的方式都行，关键是"真的看到每一页"。
 
-1. 有 Word 就导出 PDF、翻一遍：目录是否空白、色块/表格是否错位、有无整页空白。
-2. 没 Word 就重新解压 docx，确认目录页不是"横幅 + 空白"。
-3. 有问题就改，别直接交付。
+逐页检查：
 
-```powershell
-$w = New-Object -ComObject Word.Application; $w.Visible = $false; $w.DisplayAlerts = 0
-$d = $w.Documents.Open("C:\path\报告.docx")
-$d.Fields.Update() | Out-Null; $d.Save()
-$d.ExportAsFixedFormat("C:\path\报告.pdf", 17)
-$d.Close($false); $w.Quit()
-```
+- 有没有整页空白（尤其目录页）。
+- 标题层级、色块、表格有没有错位、压字、串行。
+- 有没有孤行、断表、封面内容溢出到第二页。
+- 中文有没有退化成默认字体、底纹有没有变成黑块。
+- 旁批表格的左右两列是否对齐、有没有被挤扁。
+
+发现问题就改、重新生成、再看，直到干净。没渲染看过就交付，等于没做。
 
 ---
 
@@ -414,7 +428,7 @@ cover_centered 或 cover_minimal
 h1_bar 一、总评              → body + block("info")
 h1_bar 二、审题与评价标准     → 材料在问什么 / 评价标准 / 本文扣题定位
                               （body + table 或 block；透明化 AI 的审题与尺度）
-h1_bar 三、分段评语           → h2（每段）+ body + block("good"/"warn")
+h1_bar 三、分段点评（批注式）  → 完整原文 + 三种批注（见下）
 h1_bar 四、语言与综合         → bullet（优点/问题）
 h1_bar 五、逻辑链审查         → logic_table
 h1_bar 六、参考评分           → score_card
@@ -422,6 +436,16 @@ h1_bar 七、修改建议           → numbered
 ```
 节标题用竖条（克制）；只有"亮点/问题/结论"用色块；分数用评分卡。
 第二节"审题与评价标准"是给读者的"透明化"模块：让作者看到 AI 怎么读题、按什么尺子给分，可复核、也能学审题。
+
+第三节"分段点评"一律用批注式，并且完整展示原文（一字不落）。 三种批注：
+
+| 形式 | 用在 | docx 实现 |
+|---|---|---|
+| 段内批 | 局部字句问题 | 原文里直接插 `【...】` |
+| 段末批 | 整段判断 | 原文段之后另起一段 body/block |
+| 旁批 | 逐段对照 | `side_table`（两列：左原文、右批注） |
+
+一般做法：先把某段原文完整排出，段内插 `【】`，段末给一句总评；需要逐段对照时改用 `side_table`。
 
 ### 讲评讲义（班级 / 多篇 / 一题）
 
