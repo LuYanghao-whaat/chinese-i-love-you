@@ -6,6 +6,21 @@
 
 ---
 
+## 零、先确认文档视效（四档）
+
+选"Word 文档"时，先问用户要哪一档：
+
+| 档位 | 做什么 | 用哪些函数 |
+|---|---|---|
+| 普通（默认） | 标题 + 正文 + 页码，够看就行 | `setup_global_styles`、`setup_page_section`、`add_h1`、`add_h2`、`add_body` |
+| 美观 | 加封面、目录、色块、分节，用于正式场合 | 再加 `add_cover`、`add_toc`、`add_custom_block`、`add_data_table` |
+| 仅 Markdown | 不生成 `.docx`，只输出 Markdown 源码 | — |
+| 纯文本 | 只输出无格式纯文本 | — |
+
+用户没指定，就按"普通"来。选"仅 Markdown / 纯文本"时，不写 Python、不碰环境。
+
+---
+
 ## 一、环境准备（默认帮用户装好）
 
 生成前先确认环境，缺什么补什么：
