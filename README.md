@@ -249,6 +249,16 @@ AI 的时代，优秀的教学方法不该再是稀缺品。
 
 ---
 
+## 来源与致谢
+
+本 Skill 基于 [Weichenleeeee123/oh-my-chinese-teacher](https://github.com/Weichenleeeee123/oh-my-chinese-teacher)（MIT License）修改而来。
+
+- 上游提供了「语文老师.skill」的原始框架：审题 / 提纲 / 范文 / 批改 / 限时训练，三立审题法、素材库与示例体系。
+- 本项目在其基础上做了大幅重构：核心从「素材 + 五句一段」转向「论证中心」，重写评分尺（扣题闸门、新高考 60 制、评价平衡性），新增体裁创新、逻辑链审查、docx 输出等模块，并扩充了个人校准数据。
+- 原始版权与许可声明见上游仓库；本项目继续以 MIT License 发布，版权归 oh-my-chinese-teacher contributors 及本项目贡献者。
+
+---
+
 ## 许可
 
 方法论与素材整理工作按 [MIT License](LICENSE) 发布，可自由使用、修改、分发。
