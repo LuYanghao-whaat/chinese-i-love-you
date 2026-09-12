@@ -411,15 +411,17 @@ $d.Close($false); $w.Quit()
 
 ```
 cover_centered 或 cover_minimal
-h1_bar 一、总评        → body + block("info")
-h1_bar 二、扣题判断     → h2 + body + block("warn")
-h1_bar 三、分段评语     → h2（每段）+ body + block("good"/"warn")
-h1_bar 四、语言与综合   → bullet（优点/问题）
-h1_bar 五、逻辑链审查   → logic_table
-h1_bar 六、参考评分     → score_card
-h1_bar 七、修改建议     → numbered
+h1_bar 一、总评              → body + block("info")
+h1_bar 二、审题与评价标准     → 材料在问什么 / 评价标准 / 本文扣题定位
+                              （body + table 或 block；透明化 AI 的审题与尺度）
+h1_bar 三、分段评语           → h2（每段）+ body + block("good"/"warn")
+h1_bar 四、语言与综合         → bullet（优点/问题）
+h1_bar 五、逻辑链审查         → logic_table
+h1_bar 六、参考评分           → score_card
+h1_bar 七、修改建议           → numbered
 ```
 节标题用竖条（克制）；只有"亮点/问题/结论"用色块；分数用评分卡。
+第二节"审题与评价标准"是给读者的"透明化"模块：让作者看到 AI 怎么读题、按什么尺子给分，可复核、也能学审题。
 
 ### 讲评讲义（班级 / 多篇 / 一题）
 
