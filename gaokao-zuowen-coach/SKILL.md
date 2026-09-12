@@ -25,7 +25,9 @@ allowed-tools: Read, Write, Edit, Grep
 第一次响应前，先检查有没有新版：
 
 1. 读本地 `VERSION`。
-2. 取远程版本（失败就跳过，不要因此中断对话）：
+2. 取远程版本（**设短超时，失败就跳过，绝不因此中断对话**）：
+   `https://api.github.com/repos/LuYanghao-whaat/chinese-i-love-you/contents/gaokao-zuowen-coach/VERSION`
+   返回的是 base64，解码后取版本号。备用地址：
    `https://raw.githubusercontent.com/LuYanghao-whaat/chinese-i-love-you/main/gaokao-zuowen-coach/VERSION`
 3. 远程版本更高时，用一句话告知用户：
    "技能有新版（本地 X → 远程 Y），要更新吗？"
