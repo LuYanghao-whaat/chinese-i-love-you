@@ -1,68 +1,93 @@
 # Word 文档输出（.docx）
 
 > 当用户在开场选"输出格式 = Word 文档"时，用本模块。
-> 工具链：Python 3.12 + python-docx。完整排版规范已随本 Skill 归档在 `references/docx/`：
+> 工具链：Python 3.12 + python-docx。完整排版规范已归档在 `references/docx/`：
 > `docx-skill-pydocx-zh.md`、`docx-guide-pydocx-zh.md`、`visual-style-spec-zh.md`。
+
+这个模块不是一套固定模板，而是一个组件库：按内容挑模块、拼装成文档。
+先定"文档类型"，再定"视效档位"，然后从组件库里挑件。
 
 ---
 
-## 零、先确认文档视效（三档）
+## 零、先定文档类型（批改报告 / 讲评讲义）
 
-选"Word 文档"时，先问用户要哪一档。三档都生成 `.docx`，区别只在保留多少视觉包装：
+同一个 `.docx`，可以是两种东西。生成前先问清楚（或按触发语判断）。
+
+| | 批改报告 | 讲评讲义 |
+|---|---|---|
+| 面向 | 一篇作文的作者本人 | 一个班 / 多篇作文 / 一个题目 |
+| 目的 | 诊断这一篇 + 给分 + 改法 | 教这一类题怎么写 + 横向对比 |
+| 结构 | 总评 → 扣题 → 分段评语 → 语言 → 逻辑链 → 评分 → 建议 | 原题再现 → 审题 → 立意 → 陷阱 → 作文分析 → 总结 |
+| 重点组件 | 评分卡、逐段色块、逻辑链表、建议清单 | 原题框、方法列表、范文/多篇对照、陷阱警示块 |
+| 触发语 | "批改这篇""打个分""给份报告" | "讲评""讲义""给全班""分析这几篇" |
+
+两者不互斥：讲义里的"作文分析"一节，可以直接嵌一份批改报告。
+拿不准时，默认按批改报告（单篇请求最常见）；用户提到"班/多篇/讲评"就转讲义。
+
+---
+
+## 一、再定视效档位（三档，都生成 .docx）
 
 | 档位 | 保留什么 | 不用什么 |
 |---|---|---|
 | 普通（默认） | 封面 + 分节标题 + 正文 + 页码 | 目录、色块 |
-| 美观 | 再加目录、点评色块、数据表 | — |
-| 极简 | 只保留 Markdown 语法能表达的格式：标题、列表、表格、加粗斜体 | 颜色、底纹、边框、自定义字体 |
-
-用户没指定，就按"普通"来。极简也生成 `.docx`，只是样式收敛到 Markdown 级别。
+| 美观 | 再加目录、点评色块、数据表、色带封面 | — |
+| 极简 | 只保留 Markdown 级格式：标题、列表、表格、加粗斜体 | 颜色、底纹、边框、自定义字体 |
 
 ---
 
-## 一、环境准备（默认帮用户装好）
+## 二、环境准备（默认帮用户装好）
 
 1. 查 Python 3.12：`py -3.12 --version`
 2. 查库：`py -3.12 -m pip show python-docx`
-3. 缺 Python 3.12 → `winget install Python.Python.3.12`（装不了就提示用户手动装）
+3. 缺 Python 3.12 → `winget install Python.Python.3.12`
 4. 缺库 → `py -3.12 -m pip install python-docx`
 
-装完复验一次，再生成。不要把带报错的半成品丢给用户。
+装完复验，再生成。不要把带报错的半成品丢给用户。
 
 ---
 
-## 二、字体
+## 三、字体与配色（组件库的公共常量）
 
-本 Skill 偏好宋体 / 楷体，避免微软雅黑、等线。模板里的字体常量：
-正文与标题用 `宋体`，引用、点评、色块内文字用 `楷体`。
+字体：正文标题用 `宋体`，引用/点评/色块内文字用 `楷体`。
+配色：一套克制的主色 + 语义色，别每处随手换。
 
----
+```python
+FONT_SONG = "宋体"
+FONT_KAI = "楷体"
 
-## 三、工作流（SOP 6 步）
+C_PRIMARY = (31, 78, 121)      # 深蓝：一级标题
+C_ACCENT  = (46, 117, 182)     # 蓝：二级标题
+C_TEXT    = (51, 51, 51)       # 正文
+C_GRAY    = (120, 120, 120)    # 辅助信息
+C_GOOD    = (39, 111, 66)      # 绿：亮点
+C_WARN    = (150, 84, 20)      # 棕：问题
+C_SCORE   = (176, 58, 46)      # 红：分数
 
-1. 确定内容：理清封面信息、章节、段落、表格、点评。
-2. 模块化布局：标题做封面；规划章节层级；并列内容转表格或列表。
-3. 套用模板函数，不要另起炉灶。
-4. 写完整脚本，本地执行。
-5. 验证与自愈：报错就改，直到跑通；跑通后再走第六节的"生成后自检"。
-6. 交付：给出 `.docx` 绝对路径。
-
----
-
-## 四、致命错误规避
-
-1. 中英文字体失效：文档级改 `Normal` 样式的 `w:eastAsia`。
-2. 底纹黑块：`w:shd` 的 `w:val` 必须是 `"clear"`。
-3. 颜色：字体色用 `RGBColor`；高亮底色用 `WD_COLOR_INDEX`。
-4. 表格列宽错乱：设 `w:tblLayout type="fixed"`。
-5. 页眉页脚串扰：多节文档改页眉页脚前先 `is_linked_to_previous = False`。
-6. 换行崩溃：`add_run()` 里不能用 `\n`，换行用新段落或 `run.add_break()`。
-7. 兼容性模式：必须调 `set_doc_settings()`，把 `compatibilityMode` 设为 15，否则 Word 以兼容模式打开、排版漂移。
-8. 目录空白页：TOC 是域，python-docx 生成后不会自动渲染，Word 首次打开是空白。`set_doc_settings()` 里已加 `updateFields=true`，让 Word 打开时自动更新域。普通/极简档不放目录，只有美观档放。
+HEX_PRIMARY = "1F4E79"
+HEX_RULE    = "C9D8E8"
+```
 
 ---
 
-## 五、标准模板（整体使用，只在内容填充区写逻辑）
+## 四、工作流（动态拼装）
+
+1. 读原始内容，先判文档类型（批改报告 / 讲义）。
+2. 按类型选骨架顺序（见第八节），但骨架只是顺序，具体每节用哪个组件看内容。
+3. 逐节挑组件：这段是并列要点就用列表，是对照就用两栏/表格，是重点结论就用色块，是分数就用评分卡。
+4. 写脚本、本地跑通。
+5. 生成后自检（第七节）。
+
+动态化原则：不要每篇都用同一串函数。内容决定组件——
+- 有对比 → 两栏或表格；纯叙述 → 正文 + 色块。
+- 有分数 → 评分卡；只有建议 → 编号列表。
+- 讲义的章节标题用色带（`h1_banner`）；批改报告的节标题用竖条（`h1_bar`），更克制。
+
+---
+
+## 五、组件库
+
+下面每个函数都可独立调用、自由组合。整体复制进脚本即可。
 
 ```python
 import os
@@ -73,103 +98,68 @@ from docx.enum.section import WD_SECTION
 from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
 
-FONT_SONG = "宋体"
-FONT_KAI = "楷体"
+# ============ A. 底层工具 ============
 
-# 统一配色
-C_PRIMARY = (31, 78, 121)     # 深蓝：大标题
-C_ACCENT  = (46, 117, 182)    # 蓝：小标题
-C_TEXT    = (51, 51, 51)      # 正文
-C_GRAY    = (120, 120, 120)   # 辅助信息
-HEX_ACCENT = "1F4E79"
-HEX_RULE   = "C9D8E8"
-
-# ================= 1. OXML 工具 =================
-
-def set_run_font(run, font_name, size_pt, rgb_tuple=None, bold=False):
-    run.font.name = font_name
-    run._element.rPr.rFonts.set(qn('w:eastAsia'), font_name)
-    run.font.size = Pt(size_pt)
+def set_run(run, font=FONT_SONG, size=12, color=None, bold=False, italic=False, highlight=None):
+    run.font.name = font
+    run._element.rPr.rFonts.set(qn('w:eastAsia'), font)
+    run.font.size = Pt(size)
     run.font.bold = bold
-    if rgb_tuple:
-        run.font.color.rgb = RGBColor(*rgb_tuple)
+    run.font.italic = italic
+    if color:
+        run.font.color.rgb = RGBColor(*color)
+    if highlight:
+        run.font.highlight_color = highlight
 
-def add_shading(paragraph, hex_color):
+def shading(paragraph, hex_color):
     pPr = paragraph._p.get_or_add_pPr()
-    for el in pPr.findall(qn('w:shd')): pPr.remove(el)
+    for el in pPr.findall(qn('w:shd')):
+        pPr.remove(el)
     shd = OxmlElement('w:shd')
-    shd.set(qn('w:val'), 'clear')
+    shd.set(qn('w:val'), 'clear')          # 必须 clear，否则黑块
     shd.set(qn('w:color'), 'auto')
     shd.set(qn('w:fill'), hex_color)
     pPr.append(shd)
 
-def add_bottom_border(paragraph, color=HEX_RULE, sz="6"):
+def border(paragraph, sides, color=HEX_RULE, sz="6", space="4"):
     pPr = paragraph._p.get_or_add_pPr()
     pBdr = OxmlElement('w:pBdr')
-    bottom = OxmlElement('w:bottom')
-    bottom.set(qn('w:val'), 'single')
-    bottom.set(qn('w:sz'), sz)
-    bottom.set(qn('w:space'), '4')
-    bottom.set(qn('w:color'), color)
-    pBdr.append(bottom)
+    for side in sides:
+        b = OxmlElement(f'w:{side}')
+        b.set(qn('w:val'), 'single'); b.set(qn('w:sz'), sz)
+        b.set(qn('w:space'), space); b.set(qn('w:color'), color)
+        pBdr.append(b)
     pPr.append(pBdr)
 
-def add_left_bar(paragraph, color=HEX_ACCENT, sz="18"):
-    pPr = paragraph._p.get_or_add_pPr()
-    pBdr = OxmlElement('w:pBdr')
-    left = OxmlElement('w:left')
-    left.set(qn('w:val'), 'single')
-    left.set(qn('w:sz'), sz)
-    left.set(qn('w:space'), '6')
-    left.set(qn('w:color'), color)
-    pBdr.append(left)
-    pPr.append(pBdr)
+def page_number(paragraph):
+    def fld(p, t):
+        r = p.add_run()
+        b = OxmlElement('w:fldChar'); b.set(qn('w:fldCharType'), 'begin')
+        i = OxmlElement('w:instrText'); i.text = t
+        e = OxmlElement('w:fldChar'); e.set(qn('w:fldCharType'), 'end')
+        r._r.extend([b, i, e])
+    paragraph.add_run("第 "); fld(paragraph, "PAGE")
+    paragraph.add_run(" 页 / 共 "); fld(paragraph, "NUMPAGES"); paragraph.add_run(" 页")
 
-def add_page_number(paragraph):
-    def fld(para, instr_text):
-        run = para.add_run()
-        begin = OxmlElement('w:fldChar'); begin.set(qn('w:fldCharType'), 'begin')
-        instr = OxmlElement('w:instrText'); instr.text = instr_text
-        end = OxmlElement('w:fldChar'); end.set(qn('w:fldCharType'), 'end')
-        run._r.extend([begin, instr, end])
-    paragraph.add_run("第 ")
-    fld(paragraph, "PAGE")
-    paragraph.add_run(" 页 / 共 ")
-    fld(paragraph, "NUMPAGES")
-    paragraph.add_run(" 页")
+# ============ B. 全局设置 ============
 
-def add_toc(doc, title="目录"):
-    add_h1(doc, title)
-    para = doc.add_paragraph()
-    run = para.add_run()
-    begin = OxmlElement("w:fldChar"); begin.set(qn("w:fldCharType"), "begin")
-    instr = OxmlElement("w:instrText"); instr.set(qn("xml:space"), "preserve")
-    instr.text = 'TOC \\o "1-2" \\h \\z \\u'
-    end = OxmlElement("w:fldChar"); end.set(qn("w:fldCharType"), "end")
-    run._r.extend([begin, instr, end])
-    doc.add_page_break()
+def setup_global_styles(doc, body_size=12, line=1.5):
+    n = doc.styles['Normal']
+    n.font.name = FONT_SONG; n.font.size = Pt(body_size)
+    n.element.rPr.rFonts.set(qn('w:eastAsia'), FONT_SONG)
+    n.font.color.rgb = RGBColor(*C_TEXT)
+    n.paragraph_format.line_spacing = line
+    n.paragraph_format.space_after = Pt(6)
 
-# ================= 2. 全局设置 =================
-
-def setup_global_styles(doc):
-    normal = doc.styles['Normal']
-    normal.font.name = FONT_SONG
-    normal.font.size = Pt(12)
-    normal.element.rPr.rFonts.set(qn('w:eastAsia'), FONT_SONG)
-    normal.font.color.rgb = RGBColor(*C_TEXT)
-    normal.paragraph_format.line_spacing = 1.5
-    normal.paragraph_format.space_after = Pt(6)
-
-def setup_page_section(doc, index=0):
-    sec = doc.sections[index]
-    sec.page_width, sec.page_height = Inches(8.27), Inches(11.69)
-    sec.left_margin = sec.right_margin = sec.top_margin = sec.bottom_margin = Inches(1)
-    ftr = sec.footer
-    ftr.is_linked_to_previous = False
-    fp = ftr.paragraphs[0]
-    fp.clear()
-    fp.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    add_page_number(fp)
+def setup_page_section(doc, index=0, footer=True):
+    s = doc.sections[index]
+    s.page_width, s.page_height = Inches(8.27), Inches(11.69)
+    s.left_margin = s.right_margin = s.top_margin = s.bottom_margin = Inches(1)
+    if footer:
+        s.footer.is_linked_to_previous = False
+        fp = s.footer.paragraphs[0]; fp.clear()
+        fp.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        page_number(fp)
 
 def set_doc_settings(doc):
     """兼容性模式 15 + 打开时更新域（修目录空白页）"""
@@ -180,134 +170,268 @@ def set_doc_settings(doc):
     cs.set(qn('w:name'), 'compatibilityMode')
     cs.set(qn('w:uri'), 'http://schemas.microsoft.com/office/word')
     cs.set(qn('w:val'), '15')
-    compat.append(cs)
-    st.append(compat)
+    compat.append(cs); st.append(compat)
     for el in st.findall(qn('w:updateFields')): st.remove(el)
-    uf = OxmlElement('w:updateFields'); uf.set(qn('w:val'), 'true')
-    st.append(uf)
+    uf = OxmlElement('w:updateFields'); uf.set(qn('w:val'), 'true'); st.append(uf)
 
-# ================= 3. 内容模块 =================
+def header_text(section, text, align=WD_ALIGN_PARAGRAPH.RIGHT):
+    section.header.is_linked_to_previous = False
+    p = section.header.paragraphs[0]; p.clear(); p.alignment = align
+    set_run(p.add_run(text), FONT_SONG, 9, C_GRAY)
 
-def add_cover(doc, title, subtitle, info):
+def set_columns(section, num=2):
+    cols = section._sectPr.xpath('./w:cols')[0]
+    cols.set(qn('w:num'), str(num)); cols.set(qn('w:space'), '425')
+
+# ============ C. 封面（三选一） ============
+
+def cover_centered(doc, title, subtitle, info):
     for _ in range(6): doc.add_paragraph()
     p = doc.add_paragraph(); p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    set_run_font(p.add_run(title), FONT_SONG, 26, C_PRIMARY, bold=True)
+    set_run(p.add_run(title), FONT_SONG, 26, C_PRIMARY, bold=True)
     if subtitle:
         p2 = doc.add_paragraph(); p2.alignment = WD_ALIGN_PARAGRAPH.CENTER
-        set_run_font(p2.add_run(subtitle), FONT_KAI, 15, C_GRAY)
+        set_run(p2.add_run(subtitle), FONT_KAI, 15, C_GRAY)
     rule = doc.add_paragraph(); rule.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    add_bottom_border(rule, color=HEX_ACCENT, sz="8")
+    border(rule, ['bottom'], color=HEX_PRIMARY, sz="8")
     for _ in range(8): doc.add_paragraph()
     p3 = doc.add_paragraph(); p3.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    set_run_font(p3.add_run(info), FONT_SONG, 11, C_GRAY)
+    set_run(p3.add_run(info), FONT_SONG, 11, C_GRAY)
     doc.add_page_break()
 
-def add_h1(doc, text):
+def cover_banner(doc, title, subtitle, info, band="1F4E79"):
+    """顶部整幅色带封面，讲义用着更醒目"""
+    bandp = doc.add_paragraph(); bandp.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    bandp.paragraph_format.space_before = Pt(80); bandp.paragraph_format.space_after = Pt(40)
+    set_run(bandp.add_run(title), FONT_SONG, 30, (255, 255, 255), bold=True)
+    shading(bandp, band)
+    p2 = doc.add_paragraph(); p2.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    set_run(p2.add_run(subtitle), FONT_KAI, 16, C_GRAY)
+    for _ in range(10): doc.add_paragraph()
+    p3 = doc.add_paragraph(); p3.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    set_run(p3.add_run(info), FONT_SONG, 11, C_GRAY)
+    doc.add_page_break()
+
+def cover_minimal(doc, title, subtitle=""):
+    p = doc.add_paragraph(); p.paragraph_format.space_before = Pt(160)
+    set_run(p.add_run(title), FONT_SONG, 22, C_PRIMARY, bold=True)
+    if subtitle:
+        p2 = doc.add_paragraph()
+        set_run(p2.add_run(subtitle), FONT_KAI, 13, C_GRAY)
+    doc.add_page_break()
+
+# ============ D. 标题与分隔 ============
+
+def h1_bar(doc, text):
+    """左竖条，批改报告的节标题（克制）"""
     p = doc.add_paragraph()
     p.paragraph_format.space_before, p.paragraph_format.space_after = Pt(18), Pt(8)
     p.paragraph_format.left_indent = Inches(0.12)
-    set_run_font(p.add_run(text), FONT_SONG, 16, C_PRIMARY, bold=True)
-    add_left_bar(p)
+    set_run(p.add_run(text), FONT_SONG, 16, C_PRIMARY, bold=True)
+    border(p, ['left'], color=HEX_PRIMARY, sz="18", space="6")
 
-def add_h2(doc, text):
+def h1_banner(doc, text, band="1F4E79"):
+    """整幅色带，讲义章节标题（醒目）"""
+    p = doc.add_paragraph(); p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    p.paragraph_format.space_before, p.paragraph_format.space_after = Pt(16), Pt(10)
+    set_run(p.add_run(text), FONT_SONG, 17, (255, 255, 255), bold=True)
+    shading(p, band)
+
+def h2(doc, text):
     p = doc.add_paragraph()
     p.paragraph_format.space_before, p.paragraph_format.space_after = Pt(12), Pt(4)
-    set_run_font(p.add_run(text), FONT_SONG, 13, C_ACCENT, bold=True)
-    add_bottom_border(p)
+    set_run(p.add_run(text), FONT_SONG, 13, C_ACCENT, bold=True)
+    border(p, ['bottom'], color=HEX_RULE)
 
-def add_body(doc, text):
+def h3(doc, text):
+    p = doc.add_paragraph()
+    p.paragraph_format.space_before = Pt(8)
+    set_run(p.add_run(text), FONT_SONG, 12, C_PRIMARY, bold=True)
+
+def divider(doc, text=""):
+    p = doc.add_paragraph(); p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    set_run(p.add_run(text or " "), FONT_SONG, 9, C_GRAY)
+    border(p, ['bottom'], color=HEX_RULE)
+
+# ============ E. 正文与文本 ============
+
+def body(doc, text):
     doc.add_paragraph(text)
 
-def add_list_item(doc, text):
-    p = doc.add_paragraph()
-    p.paragraph_format.left_indent = Inches(0.3)
-    set_run_font(p.add_run("· " + text), FONT_SONG, 12, C_TEXT)
+def body_indent(doc, text):
+    """首行缩进两字，正文更中文"""
+    p = doc.add_paragraph(text)
+    p.paragraph_format.first_line_indent = Pt(24)
 
-def add_block(doc, text, bg="EAF2FA", border="B9D4EC"):
-    """点评色块：亮点用 EAF2FA，问题用 FBF3E7 / E6D2AE"""
+def lead(doc, text):
+    """导语：楷体灰"""
+    p = doc.add_paragraph()
+    set_run(p.add_run(text), FONT_KAI, 12, C_GRAY)
+
+def quote(doc, text):
+    """引用：楷体 + 左竖条"""
+    p = doc.add_paragraph()
+    p.paragraph_format.left_indent = Inches(0.2)
+    set_run(p.add_run(text), FONT_KAI, 12, (60, 60, 60))
+    border(p, ['left'], color=HEX_RULE, sz="18", space="8")
+
+def caption(doc, text):
+    p = doc.add_paragraph(); p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    set_run(p.add_run(text), FONT_SONG, 9, C_GRAY, italic=True)
+
+# ============ F. 列表 ============
+
+def bullet(doc, text, color=None):
+    p = doc.add_paragraph(); p.paragraph_format.left_indent = Inches(0.3)
+    set_run(p.add_run("· " + text), FONT_SONG, 12, color or C_TEXT)
+
+def numbered(doc, idx, text):
+    p = doc.add_paragraph(); p.paragraph_format.left_indent = Inches(0.3)
+    set_run(p.add_run(f"{idx}. "), FONT_SONG, 12, C_ACCENT, bold=True)
+    set_run(p.add_run(text), FONT_SONG, 12, C_TEXT)
+
+def kv(doc, key, value):
+    p = doc.add_paragraph()
+    set_run(p.add_run(key + "："), FONT_SONG, 12, C_PRIMARY, bold=True)
+    set_run(p.add_run(value), FONT_SONG, 12, C_TEXT)
+
+# ============ G. 色块卡片（语义化） ============
+
+_BLOCK = {
+    "info":  ("EAF2FA", "B9D4EC", (40, 40, 40)),
+    "good":  ("EAF5EC", "B7DCC0", (30, 80, 45)),
+    "warn":  ("FBF3E7", "E6D2AE", (120, 70, 15)),
+    "score": ("FDECEA", "F0C0B8", (150, 40, 30)),
+    "plain": ("F7F8FA", "E2E6EA", (51, 51, 51)),
+}
+
+def block(doc, text, kind="info"):
+    bg, bd, fg = _BLOCK.get(kind, _BLOCK["info"])
     p = doc.add_paragraph()
     p.paragraph_format.left_indent = Inches(0.15)
     p.paragraph_format.right_indent = Inches(0.15)
     p.paragraph_format.space_before, p.paragraph_format.space_after = Pt(6), Pt(6)
-    set_run_font(p.add_run(text), FONT_KAI, 12, (40, 40, 40))
-    add_shading(p, bg)
-    pPr = p._p.get_or_add_pPr()
-    pBdr = OxmlElement('w:pBdr')
-    for side in ['top', 'left', 'bottom', 'right']:
-        b = OxmlElement(f'w:{side}')
-        b.set(qn('w:val'), 'single'); b.set(qn('w:sz'), '4')
-        b.set(qn('w:space'), '4'); b.set(qn('w:color'), border)
-        pBdr.append(b)
-    pPr.append(pBdr)
+    set_run(p.add_run(text), FONT_KAI, 12, fg)
+    shading(p, bg)
+    border(p, ['top', 'left', 'bottom', 'right'], color=bd, sz="4")
 
-def add_data_table(doc, matrix):
-    if not matrix: return
-    table = doc.add_table(rows=len(matrix), cols=len(matrix[0]))
-    table.style = 'Table Grid'
-    tblPr = table._tbl.tblPr
+def score_card(doc, total, level, dims):
+    """评分卡：总分 + 等级 + 维度行。dims = [(名称, 得分, 说明), ...]"""
+    p = doc.add_paragraph(); p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    set_run(p.add_run(f"{total}"), FONT_SONG, 30, C_SCORE, bold=True)
+    set_run(p.add_run(" / 60"), FONT_SONG, 14, C_GRAY)
+    p2 = doc.add_paragraph(); p2.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    set_run(p2.add_run(level), FONT_SONG, 13, C_PRIMARY, bold=True)
+    for name, sc, note in dims:
+        kv(doc, name, f"{sc}　{note}")
+
+# ============ H. 表格 ============
+
+def table(doc, matrix, header_hex=HEX_PRIMARY, widths=None):
+    t = doc.add_table(rows=len(matrix), cols=len(matrix[0]))
+    t.style = 'Table Grid'
     layout = OxmlElement('w:tblLayout'); layout.set(qn('w:type'), 'fixed')
-    tblPr.append(layout)
-    for r, row in enumerate(matrix):
-        for c, val in enumerate(row):
-            cell = table.cell(r, c)
-            cell.text = str(val)
-            if r == 0:
-                add_shading(cell.paragraphs[0], HEX_ACCENT)
+    t._tbl.tblPr.append(layout)
+    if widths:
+        for r in t.rows:
+            for i, w in enumerate(widths):
+                r.cells[i].width = Inches(w)
+    for ri, row in enumerate(matrix):
+        for ci, val in enumerate(row):
+            cell = t.cell(ri, ci); cell.text = str(val)
+            if ri == 0:
+                shading(cell.paragraphs[0], header_hex)
             for para in cell.paragraphs:
                 for run in para.runs:
-                    set_run_font(run, FONT_SONG, 10,
-                                 (255, 255, 255) if r == 0 else C_TEXT,
-                                 bold=(r == 0))
+                    set_run(run, FONT_SONG, 10,
+                            (255, 255, 255) if ri == 0 else C_TEXT, bold=(ri == 0))
+    return t
 
-def generate(output_path):
-    doc = Document()
-    setup_global_styles(doc)
-    setup_page_section(doc, 0)
-    set_doc_settings(doc)
+def logic_table(doc, rows):
+    """逻辑链审查专用：环节 / 说法 / 判断 / 说明"""
+    table(doc, [["环节", "文章的说法", "判断", "说明"]] + rows, widths=[0.9, 2.3, 0.9, 2.4])
 
-    # ============ 内容填充区（按文本动态生成） ============
-    # 普通档：add_cover → add_h1/add_h2/add_body/add_list_item
-    # 美观档：再加 add_toc / add_block / add_data_table
-    # 极简档：只用 add_h1/add_h2/add_body/add_list_item/add_data_table，不传颜色、不加底纹边框
+# ============ I. 图片与高级（按需） ============
 
-    # ======================================================
-    doc.save(output_path)
-    print(f"成功渲染文档: {output_path}")
+def picture(doc, path, width_in=5):
+    p = doc.add_paragraph(); p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    p.add_run().add_picture(path, width=Inches(width_in))
 
-if __name__ == "__main__":
-    generate(os.path.abspath("批改报告.docx"))
+def hyperlink(paragraph, url, text):
+    part = paragraph.part
+    r_id = part.relate_to(url,
+        "http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink",
+        is_external=True)
+    link = OxmlElement('w:hyperlink'); link.set(qn('r:id'), r_id)
+    r = OxmlElement('w:r'); t = OxmlElement('w:t'); t.text = text
+    r.append(t); link.append(r); paragraph._p.append(link)
+
+def dropcap(paragraph, lines=3):
+    pPr = paragraph._p.get_or_add_pPr()
+    fp = OxmlElement('w:framePr')
+    fp.set(qn('w:dropCap'), 'drop'); fp.set(qn('w:lines'), str(lines))
+    pPr.append(fp)
 ```
 
 ---
 
-## 六、生成后自检（重要）
+## 六、致命错误规避
 
-跑通不算完，必须看一眼：
+1. 中英文字体失效：文档级改 `Normal` 的 `w:eastAsia`。
+2. 底纹黑块：`w:shd` 的 `w:val` 必须是 `"clear"`。
+3. 表格列宽错乱：加 `w:tblLayout type="fixed"`。
+4. 页眉页脚串扰：多节文档先 `is_linked_to_previous = False`。
+5. 换行崩溃：`add_run()` 里不能用 `\n`。
+6. 兼容性模式：必须调 `set_doc_settings()`（兼容性 15 + 更新域）。
+7. 目录空白页：`updateFields=true`；普通/极简档不放目录，只有美观档放。
 
-1. 有 Word 时，用 COM 打开、更新域、导出 PDF，翻一遍：
-   - 目录页是否仍空白（若空，说明 `updateFields` 没生效，改用 COM 手动 `doc.Fields.Update()` 后保存）。
-   - 标题层级、色块、表格是否错位。
-   - 有没有整页空白、孤行。
-2. 没有 Word 时，至少重新解压 docx，确认目录页不是"横幅 + 空白"。
-3. 发现版面问题就改，不要直接交付。
+---
 
-PowerShell 更新域并导出 PDF 的参考：
+## 七、生成后自检（必须）
+
+跑通不算完，翻一遍：
+
+1. 有 Word 就导出 PDF、翻一遍：目录是否空白、色块/表格是否错位、有无整页空白。
+2. 没 Word 就重新解压 docx，确认目录页不是"横幅 + 空白"。
+3. 有问题就改，别直接交付。
 
 ```powershell
 $w = New-Object -ComObject Word.Application; $w.Visible = $false; $w.DisplayAlerts = 0
-$d = $w.Documents.Open("C:\path\批改报告.docx")
-$d.Fields.Update() | Out-Null
-$d.Save()
-$d.ExportAsFixedFormat("C:\path\批改报告.pdf", 17)
+$d = $w.Documents.Open("C:\path\报告.docx")
+$d.Fields.Update() | Out-Null; $d.Save()
+$d.ExportAsFixedFormat("C:\path\报告.pdf", 17)
 $d.Close($false); $w.Quit()
 ```
 
 ---
 
-## 七、与批改 / 讲义结合
+## 八、两种文档类型的推荐拼装
 
-- 讲义按 `03-批改与评分.md` 第九节的六段结构：原题再现 → 审题指导 → 立意指导 → 陷阱提示 → 作文分析 → 总结。
-- 亮点/问题点评用 `add_block`（蓝底=亮点，暖底=问题）。
-- 逻辑链审查（`08`）用 `add_data_table` 输出"环节 / 说法 / 判断 / 说明"。
-- 分数、维度得分用 `add_data_table` 或色块。
-- 交付时给出 `.docx` 绝对路径；用了目录就提醒按 `Ctrl+A`、`F9` 刷新。
+### 批改报告（单篇）
+
+```
+cover_centered 或 cover_minimal
+h1_bar 一、总评        → body + block("info")
+h1_bar 二、扣题判断     → h2 + body + block("warn")
+h1_bar 三、分段评语     → h2（每段）+ body + block("good"/"warn")
+h1_bar 四、语言与综合   → bullet（优点/问题）
+h1_bar 五、逻辑链审查   → logic_table
+h1_bar 六、参考评分     → score_card
+h1_bar 七、修改建议     → numbered
+```
+节标题用竖条（克制）；只有"亮点/问题/结论"用色块；分数用评分卡。
+
+### 讲评讲义（班级 / 多篇 / 一题）
+
+```
+cover_banner
+h1_banner 一、原题再现   → quote（原题一字不改）
+h1_banner 二、审题指导   → h2 + body + bullet
+h1_banner 三、立意指导   → table（立意对照）
+h1_banner 四、陷阱提示   → block("warn")
+h1_banner 五、作文分析   → 可嵌多份"批改报告"的精简版
+h1_banner 六、总结       → block("good")
+```
+章节标题用色带（醒目）；原题用引用块；对立意/多篇用表格对照。
+
+共同点：骨架只是顺序，具体每节挑哪个组件，由内容决定。
