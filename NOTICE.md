@@ -12,11 +12,17 @@
 
 ## 关于方法论与素材的来源
 
-本仓库基于 [Weichenleeeee123/oh-my-chinese-teacher](https://github.com/Weichenleeeee123/oh-my-chinese-teacher)（MIT License）修改而来。上游提供了「语文老师.skill」的原始框架（审题 / 提纲 / 范文 / 批改 / 限时训练、三立审题法、素材库与示例体系），本项目在其基础上重新抽象、扩写与重构。
+本仓库的上游是 [Weichenleeeee123/oh-my-chinese-teacher](https://github.com/Weichenleeeee123/oh-my-chinese-teacher)（MIT License）。原始版权归 oh-my-chinese-teacher contributors 所有，本项目完整保留其版权声明与来源链接。
 
-原始版权归 oh-my-chinese-teacher contributors 所有，本项目保留原始版权声明与来源链接。
+需要说明的是：本仓库是一次整体重构，而非简单修改。上游把「五句一段法 + 素材库 + 家国视野 + 结尾呼吁青年」当成一类文标准；本项目把该组合明确降为二类切入分（45–48），并将核心转向「论证中心」。
 
-`references/`、`resources/`、`examples/` 目录下的方法论、素材库、示例对话，是在上述基础上，结合公开资料与 AI 工程实践重新抽象、撰写而成。
+原创性构成：
+
+- `references/`：基本为原创。`05`–`09` 为全新文件，`01`–`04` 大幅重写（与上游文字重合约一成到三成）。
+- `resources/`：`02-名句素材库.md`、`03-话题原型库.md` 主要沿用上游整理；`01-人物素材库.md` 大幅增补改写；`04-校准数据.md`、`05-用户偏好.md` 为本项目新增。
+- `examples/`：在保留部分骨架的基础上重写。
+
+`references/`、`resources/`、`examples/` 目录下的内容，是在上述基础上，结合公开资料与 AI 工程实践重新抽象、撰写而成。上游 `NOTICE.md` 要求保留来源链接，本仓库照此执行。
 
 这部分内容：
 - 可以自由使用、引用、修改
