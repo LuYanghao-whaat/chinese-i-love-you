@@ -8,16 +8,19 @@
 
 ## 零、先确认文档视效（四档）
 
-选"Word 文档"时，先问用户要哪一档：
+选"Word 文档"时，先问用户要哪一档。区别在于**保留多少视觉包装**：
 
-| 档位 | 做什么 | 用哪些函数 |
+| 档位 | 保留什么 | 不用什么 |
 |---|---|---|
-| 普通（默认） | 标题 + 正文 + 页码，够看就行 | `setup_global_styles`、`setup_page_section`、`add_h1`、`add_h2`、`add_body` |
-| 美观 | 加封面、目录、色块、分节，用于正式场合 | 再加 `add_cover`、`add_toc`、`add_custom_block`、`add_data_table` |
-| 仅 Markdown | 不生成 `.docx`，只输出 Markdown 源码 | — |
-| 纯文本 | 只输出无格式纯文本 | — |
+| 普通（默认） | 标题 + 正文 + 页码，基础配色 | 封面、目录、色块 |
+| 美观 | 封面、目录、色块、分节，完整配色 | — |
+| 仅 Markdown | 只用 Markdown 语法能表达的格式：标题、列表、表格、加粗斜体 | 颜色、底纹、边框、自定义字体等特殊排版 |
+| 纯文本 | 只有文字 | 一切格式 |
 
-用户没指定，就按"普通"来。选"仅 Markdown / 纯文本"时，不写 Python、不碰环境。
+用户没指定，就按"普通"来。
+
+"仅 Markdown"和"纯文本"默认直接输出文本（`.md` / `.txt`），不跑 python-docx；
+用户坚持要 `.docx` 文件时，也只套 Markdown 级的样式（`add_h1`/`add_h2`/`add_body`/`add_list_item`/`add_data_table`，不带配色）。
 
 ---
 
