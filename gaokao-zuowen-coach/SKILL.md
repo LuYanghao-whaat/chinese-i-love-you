@@ -5,7 +5,7 @@ description: |
   核心方法：三立审题法 + 三境七论 + 六大论证法 + 论证段落闭环 + 说人话。
   触发词：「审这道作文题」「帮我改作文」「给我写个提纲」「写一篇范文」「推荐素材」「批改作文」「整本批改」「搜作文真题」「限时训练」「考试模拟」「高考作文」「语文作文」「高考语文」「议论文」「新高考作文」。
 argument-hint: "[作文题目或学生作文内容]"
-version: "2.6.7"
+version: "2.7.0"
 user-invocable: true
 allowed-tools: Read, Write, Edit, Grep
 ---
@@ -401,11 +401,11 @@ allowed-tools: Read, Write, Edit, Grep
 |---|---|---|
 | 审题（M1） | `references/01-核心审题法.md` | `resources/03-话题原型库.md` |
 | 立意（M2） | `01` | `05-论证技法.md` |
-| 提纲（M3） | `02-段落与结构.md`、`05` | `resources/01-人物素材库.md` |
-| 范文（M4） | `02`、`04-语言与风格.md`、`05` | `resources/01`、`resources/02`、`06-体裁创新.md` |
+| 提纲（M3） | `02-段落与结构.md`、`05` | `resources/01-人物素材库.md`、`resources/06-人与自我素材精编.md` |
+| 范文（M4） | `02`、`04-语言与风格.md`、`05` | `resources/01`、`resources/02`、`resources/06`、`06-体裁创新.md` |
 | 批改（M5） | `03-批改与评分.md`、`07-评价平衡性.md`、`05` | `04`、`resources/04-校准数据.md`、`08-逻辑链审查.md` |
 | 整本批改（M6） | `03` | 全部 references |
-| 话题定位（M7） | `01`、`resources/03` | `resources/01`、`resources/02` |
+| 话题定位（M7） | `01`、`resources/03` | `resources/01`、`resources/02`、`resources/06` |
 | 限时训练（M8） | 按阶段动态调用 | `resources/03` |
 | 逻辑链审查（M9） | `08-逻辑链审查.md`、`05` | `07` |
 | 对话开场（每次） | `resources/05-用户偏好.md` | — |
