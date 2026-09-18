@@ -31,7 +31,7 @@
 | 档位 | 保留什么 | 不用什么 |
 |---|---|---|
 | 普通（默认） | 封面 + 分节标题 + 正文 + 页码 | 目录、色块 |
-| 美观 | 再加目录、点评色块、数据表、色带封面 | — |
+| 美观 | 再加目录、点评色块、数据表、封面页 | — |
 | 极简 | 只保留 Markdown 级格式：标题、列表、表格、加粗斜体 | 颜色、底纹、边框、自定义字体 |
 
 ---
@@ -51,12 +51,13 @@
 
 字体：正文标题用 `宋体`，引用/点评/色块内文字用 `楷体`。
 配色：一套克制的主色 + 语义色，别每处随手换。
+**标题一律用深色文字，不用大面积实心色块**（色块只用于批注、亮点、提示这类小面积元素）。
 
 ```python
 FONT_SONG = "宋体"
 FONT_KAI = "楷体"
 
-C_PRIMARY = (31, 78, 121)      # 深蓝：一级标题
+C_PRIMARY = (44, 74, 102)      # 墨蓝：标题文字（柔和，不做实心背景块）
 C_ACCENT  = (46, 117, 182)     # 蓝：二级标题
 C_TEXT    = (51, 51, 51)       # 正文
 C_GRAY    = (120, 120, 120)    # 辅助信息
@@ -64,8 +65,10 @@ C_GOOD    = (39, 111, 66)      # 绿：亮点
 C_WARN    = (150, 84, 20)      # 棕：问题
 C_SCORE   = (176, 58, 46)      # 红：分数
 
-HEX_PRIMARY = "1F4E79"
-HEX_RULE    = "C9D8E8"
+HEX_PRIMARY = "2C4A66"         # 标题文字色（深色只上文字，不做背景块）
+HEX_HEADER  = "E3EBF3"         # 表头浅蓝底
+HEX_ZEBRA   = "F5F8FB"         # 表格隔行浅底
+HEX_RULE    = "C9D8E8"         # 分隔线
 ```
 
 ---
@@ -82,7 +85,7 @@ HEX_RULE    = "C9D8E8"
 动态化原则：不要每篇都用同一串函数。内容决定组件——
 - 有对比 → 两栏或表格；纯叙述 → 正文 + 色块。
 - 有分数 → 评分卡；只有建议 → 编号列表。
-- 讲义的章节标题用色带（`h1_banner`）；批改报告的节标题用竖条（`h1_bar`），更克制。
+- 讲义的章节标题用下划线（`h1_banner`）；批改报告的节标题用竖条（`h1_bar`），更克制。**标题都是纯文字，不铺背景色块。**
 
 ---
 
@@ -199,15 +202,17 @@ def cover_centered(doc, title, subtitle, info):
     set_run(p3.add_run(info), FONT_SONG, 11, C_GRAY)
     doc.add_page_break()
 
-def cover_banner(doc, title, subtitle, info, band="1F4E79"):
-    """顶部整幅色带封面，讲义用着更醒目"""
-    bandp = doc.add_paragraph(); bandp.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    bandp.paragraph_format.space_before = Pt(80); bandp.paragraph_format.space_after = Pt(40)
-    set_run(bandp.add_run(title), FONT_SONG, 30, (255, 255, 255), bold=True)
-    shading(bandp, band)
-    p2 = doc.add_paragraph(); p2.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    set_run(p2.add_run(subtitle), FONT_KAI, 16, C_GRAY)
-    for _ in range(10): doc.add_paragraph()
+def cover_banner(doc, title, subtitle, info):
+    """封面：蓝色宋体大标题 + 一条细线（无背景色块）"""
+    for _ in range(6): doc.add_paragraph()
+    p = doc.add_paragraph(); p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    set_run(p.add_run(title), FONT_SONG, 28, C_PRIMARY, bold=True)
+    rule = doc.add_paragraph(); rule.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    border(rule, ['bottom'], color=HEX_PRIMARY, sz="8")
+    if subtitle:
+        p2 = doc.add_paragraph(); p2.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        set_run(p2.add_run(subtitle), FONT_KAI, 15, C_GRAY)
+    for _ in range(8): doc.add_paragraph()
     p3 = doc.add_paragraph(); p3.alignment = WD_ALIGN_PARAGRAPH.CENTER
     set_run(p3.add_run(info), FONT_SONG, 11, C_GRAY)
     doc.add_page_break()
@@ -230,12 +235,12 @@ def h1_bar(doc, text):
     set_run(p.add_run(text), FONT_SONG, 16, C_PRIMARY, bold=True)
     border(p, ['left'], color=HEX_PRIMARY, sz="18", space="6")
 
-def h1_banner(doc, text, band="1F4E79"):
-    """整幅色带，讲义章节标题（醒目）"""
-    p = doc.add_paragraph(); p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    p.paragraph_format.space_before, p.paragraph_format.space_after = Pt(16), Pt(10)
-    set_run(p.add_run(text), FONT_SONG, 17, (255, 255, 255), bold=True)
-    shading(p, band)
+def h1_banner(doc, text):
+    """章节标题：蓝色宋体纯文字 + 下划线（无背景色块）"""
+    p = doc.add_paragraph()
+    p.paragraph_format.space_before, p.paragraph_format.space_after = Pt(16), Pt(8)
+    set_run(p.add_run(text), FONT_SONG, 17, C_PRIMARY, bold=True)
+    border(p, ['bottom'], color=HEX_RULE, sz="6")
 
 def h2(doc, text):
     p = doc.add_paragraph()
@@ -327,7 +332,7 @@ def score_card(doc, total, level, dims):
 
 # ============ H. 表格 ============
 
-def table(doc, matrix, header_hex=HEX_PRIMARY, widths=None):
+def table(doc, matrix, header_hex=HEX_HEADER, zebra=HEX_ZEBRA, widths=None):
     t = doc.add_table(rows=len(matrix), cols=len(matrix[0]))
     t.style = 'Table Grid'
     layout = OxmlElement('w:tblLayout'); layout.set(qn('w:type'), 'fixed')
@@ -341,10 +346,12 @@ def table(doc, matrix, header_hex=HEX_PRIMARY, widths=None):
             cell = t.cell(ri, ci); cell.text = str(val)
             if ri == 0:
                 shading(cell.paragraphs[0], header_hex)
+            elif zebra and ri % 2 == 0:
+                shading(cell.paragraphs[0], zebra)
             for para in cell.paragraphs:
                 for run in para.runs:
                     set_run(run, FONT_SONG, 10,
-                            (255, 255, 255) if ri == 0 else C_TEXT, bold=(ri == 0))
+                            C_PRIMARY if ri == 0 else C_TEXT, bold=(ri == 0))
     return t
 
 def logic_table(doc, rows):
@@ -473,6 +480,6 @@ h1_banner 四、陷阱提示   → block(“warn”)
 h1_banner 五、作文分析   → 可嵌多份“批改报告”的精简版
 h1_banner 六、总结       → block(“good”)
 ```
-章节标题用色带（醒目）；原题用引用块；对立意/多篇用表格对照。
+章节标题用下划线（醒目）；原题用引用块；对立意/多篇用表格对照。
 
 共同点：骨架只是顺序，具体每节挑哪个组件，由内容决定。
