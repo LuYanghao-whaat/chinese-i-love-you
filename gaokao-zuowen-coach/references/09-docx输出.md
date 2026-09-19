@@ -125,6 +125,18 @@ def shading(paragraph, hex_color):
     shd.set(qn('w:fill'), hex_color)
     pPr.append(shd)
 
+def cell_shading(cell, hex_color):
+    """给整个单元格填色。表格填色一律用它，不要用 shading()，
+    否则只填段落、四周留白边。"""
+    tcPr = cell._tc.get_or_add_tcPr()
+    for el in tcPr.findall(qn('w:shd')):
+        tcPr.remove(el)
+    shd = OxmlElement('w:shd')
+    shd.set(qn('w:val'), 'clear')
+    shd.set(qn('w:color'), 'auto')
+    shd.set(qn('w:fill'), hex_color)
+    tcPr.append(shd)
+
 def border(paragraph, sides, color=HEX_RULE, sz="6", space="4"):
     pPr = paragraph._p.get_or_add_pPr()
     pBdr = OxmlElement('w:pBdr')
@@ -345,9 +357,9 @@ def table(doc, matrix, header_hex=HEX_HEADER, zebra=HEX_ZEBRA, widths=None):
         for ci, val in enumerate(row):
             cell = t.cell(ri, ci); cell.text = str(val)
             if ri == 0:
-                shading(cell.paragraphs[0], header_hex)
+                cell_shading(cell, header_hex)
             elif zebra and ri % 2 == 0:
-                shading(cell.paragraphs[0], zebra)
+                cell_shading(cell, zebra)
             for para in cell.paragraphs:
                 for run in para.runs:
                     set_run(run, FONT_SONG, 10,
@@ -370,7 +382,7 @@ def side_table(doc, rows, widths=(3.1, 2.4)):
         set_run(c0.paragraphs[0].add_run(src), FONT_SONG, 10, C_TEXT)
         p1 = c1.paragraphs[0]
         set_run(p1.add_run(note), FONT_KAI, 10, C_WARN)
-        shading(p1, "FBF3E7")
+        cell_shading(c1, "FBF3E7")
     return t
 
 # ============ I. 图片与高级（按需） ============
