@@ -1,11 +1,11 @@
-<div align=“center”>
+<div align="center">
 
 # 语文老师.skill
 
 *「你请不起的高三语文名师，现在 AI 给你一位」*
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-2.6.7-brightgreen.svg)](gaokao-zuowen-coach/VERSION)
+[![Version](https://img.shields.io/badge/version-3.1.2-brightgreen.svg)](gaokao-zuowen-coach/VERSION)
 [![Updated](https://img.shields.io/github/last-commit/LuYanghao-whaat/chinese-i-love-you?label=%E6%9C%80%E5%90%8E%E6%9B%B4%E6%96%B0&color=blue)](https://github.com/LuYanghao-whaat/chinese-i-love-you/commits/main)
 [![skills.sh](https://img.shields.io/badge/skills.sh-Compatible-brightgreen)](https://skills.sh)
 [![Modes](https://img.shields.io/badge/Modes-9-blue)](#它能做什么)
@@ -82,7 +82,7 @@ npx skills add <owner>/chinese-i-love-you
 > - 材料在问什么：关键词是“学”与“相处”，问的是何时该重视、何时该放下、两者怎么共存。
 > - 本文的扣题定位：材料问“怎么相处”，文章答“退出工具自我之群、加入本真自我之空间，便是同时重视与放下”。判定：切合题意。
 >
-> 分段点评（批注式，完整展示原文）：
+> 分段点评（批注式：旁批表＋段内批【】＋段末批，缺一不可；此处节选一段）：
 >
 > | 原文 | 批注 |
 > |---|---|
@@ -148,15 +148,15 @@ git clone https://github.com/<owner>/chinese-i-love-you.git ~/.claude/skills/gao
 | **M8 限时训练** | “模拟高考 50 分钟” | 审题 8′ → 写作 35′ → 批改复盘 7′，全程提醒 |
 | **M9 逻辑链审查** | “帮我看看逻辑” | 把文章还原成推理链，标出断在哪一环，说明补什么 |
 
-### 开场先问三件事
+### 开场先问四件事
 
-第一次批改前，先问三个多选题（选“记住我的选择”就不再问）：
+第一次批改前，先问四个多选题（选“记住我的选择”就不再问；④仅在选了“Word 文档”时追问）：
 
 - 批改风格：平衡（默认）/ 偏严格 / 偏鼓励 / 自定义
 - 输出格式：探讨式（默认，像老师当面聊）/ 报告式（分条列点）/ Word 文档
 - 是否打分：需要（分数 + 三项维度）/ 不需要（只给评语建议）
 
-若选了“Word 文档”，再追问文档视效：普通（默认）/ 美观 / 仅 Markdown / 纯文本。
+若选了“Word 文档”，再追问文档视效，三档：普通（默认）/ 美观 / 极简。
 生成时按内置的 python-docx 排版规范，并默认备好 Python 3.12 与 python-docx。
 
 ### 启动先自检更新
@@ -229,7 +229,7 @@ chinese-i-love-you/
     │   ├── 02-名句素材库.md
     │   ├── 03-话题原型库.md
     │   ├── 04-校准数据.md      # 作者个人分数样本（语料著作权保留）
-    │   ├── 05-用户偏好.md      # 批改风格 / 输出格式 / 是否打分
+    │   ├── 05-用户偏好.md      # 批改风格 / 输出格式 / 是否打分 / 文档视效
     │   └── 06-人与自我素材精编.md  # 八大主题素材（名言/议论段/概念/电影/教材，著作权保留）
     └── examples/               # 3 份完整走查示例（含作者语料，著作权保留）
         ├── 01-示例_审题全流程.md
@@ -291,7 +291,7 @@ AI 的时代，优秀的教学方法不该再是稀缺品。
 
 ---
 
-<p align=“center”>
+<p align="center">
   <b>语文老师.skill</b> · 让 AI 变成你的那位语文老师<br>
   <sub>Made with care for every Chinese high school student.</sub>
 </p>
